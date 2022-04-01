@@ -1,0 +1,29 @@
+---
+- name: Install NTP daemon
+  hosts: all
+  remote_user: root
+  tasks:
+    - name: ensure NTP is installed
+      apt:
+        pkg: ntp
+        state: present
+
+    - name: configure NTP
+      template:
+        src: ntp.conf.j2
+        dest: /etc/ntp.conf
+      notify:
+        restart ntp
+      when: ntp_servers is defined and ntp_servers != None and ntp_servers != ''
+
+    - name: ensure ntpd is enabled and running
+      service:
+        name: ntp
+        enabled: true
+        state: started
+
+  handlers:
+    - name: restart ntp
+      service:
+        name: ntp
+        state: restarted
